@@ -26,13 +26,12 @@ pub fn gameLoop() !void {
 
     const playerMesh = rl.genMeshCube(1.0, 2.0, 1.0);
     const playerModel = try rl.loadModelFromMesh(playerMesh);
-    // playerModel.materials[0].maps[@intCast(@intFromEnum(rl.MATERIAL_MAP_DIFFUSE))].color = .beige;
     playerModel.materials[0].shader = shader;
 
     // Define the camera to look into our 3d world
     var camera = rl.Camera3D{
         .position = rl.Vector3{ .x = 0.0, .y = 10.0, .z = 10.0 },
-        .target = rl.Vector3{ .x = 0.0, .y = 1.0, .z = 2.0 },
+        .target = playerPosition,
         .up = rl.Vector3{ .x = 0.0, .y = 1.0, .z = 0.0 },
         .fovy = 45.0,
         .projection = .perspective,
@@ -41,7 +40,6 @@ pub fn gameLoop() !void {
     var lightPosition = rl.Vector3{ .x = 4.0, .y = 1.0, .z = 4.0 };
     const lightPosLoc = rl.getShaderLocation(shader, "lightPosition");
     const lightColorLoc = rl.getShaderLocation(shader, "lightColor");
-    // const lightColor = rl.Vector3{ .x = 0.58, .y = 0.20, .z = 0.92 };
     const lightColor = rl.Vector3{ .x = 1.0, .y = 1.0, .z = 1.0 };
     rl.setShaderValue(shader, lightColorLoc, &lightColor, .vec3);
 
@@ -59,13 +57,18 @@ pub fn gameLoop() !void {
             if (rl.isKeyDown(.left)) lightPosition.x -= 0.2;
             if (rl.isKeyDown(.down)) lightPosition.z += 0.2;
             if (rl.isKeyDown(.up)) lightPosition.z -= 0.2;
+            if (rl.isKeyDown(.left_shift)) lightPosition.y += 0.2;
+            if (rl.isKeyDown(.left_control)) lightPosition.y -= 0.2;
         } else {
             if (rl.isKeyDown(.right)) playerPosition.x += 0.2;
             if (rl.isKeyDown(.left)) playerPosition.x -= 0.2;
             if (rl.isKeyDown(.down)) playerPosition.z += 0.2;
             if (rl.isKeyDown(.up)) playerPosition.z -= 0.2;
+            if (rl.isKeyDown(.left_shift)) playerPosition.y += 0.2;
+            if (rl.isKeyDown(.left_control)) playerPosition.y -= 0.2;
         }
 
+        camera.target = playerPosition;
         rl.setShaderValue(shader, lightPosLoc, &lightPosition, .vec3);
 
         if (rl.isKeyDown(.space)) movingLight = !movingLight;
