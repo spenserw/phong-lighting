@@ -7,4 +7,4 @@ zig build
 
 ## Screenshots
 
-![phoon-lighting-demo](screenshots/phoon-lighting-demo.png)
+![phong-lighting-demo](screenshots/phong-lighting-demo.png)
