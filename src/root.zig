@@ -4,8 +4,6 @@ const rl = @import("raylib");
 
 const GLSL_VERSION = 330;
 
-const SHADERS = enum(u32) { FRAG = 0, LAST };
-
 var movingLight = false;
 
 pub fn initWindow(width: u16, height: u16, title: [:0]const u8) void {
@@ -28,6 +26,10 @@ pub fn gameLoop() !void {
     const playerModel = try rl.loadModelFromMesh(playerMesh);
     playerModel.materials[0].shader = shader;
 
+    const otherMesh = rl.genMeshKnot(2.0, 3.0, 16, 128);
+    const otherModel = try rl.loadModelFromMesh(otherMesh);
+    otherModel.materials[0].shader = shader;
+
     // Define the camera to look into our 3d world
     var camera = rl.Camera3D{
         .position = rl.Vector3{ .x = 0.0, .y = 10.0, .z = 10.0 },
@@ -36,6 +38,7 @@ pub fn gameLoop() !void {
         .fovy = 45.0,
         .projection = .perspective,
     };
+    const cameraPosLoc = rl.getShaderLocation(shader, "cameraPosition");
 
     var lightPosition = rl.Vector3{ .x = 4.0, .y = 1.0, .z = 4.0 };
     const lightPosLoc = rl.getShaderLocation(shader, "lightPosition");
@@ -70,6 +73,7 @@ pub fn gameLoop() !void {
 
         camera.target = playerPosition;
         rl.setShaderValue(shader, lightPosLoc, &lightPosition, .vec3);
+        rl.setShaderValue(shader, cameraPosLoc, &camera.position, .vec3);
 
         if (rl.isKeyDown(.space)) movingLight = !movingLight;
 
@@ -87,7 +91,8 @@ pub fn gameLoop() !void {
                 rl.beginShaderMode(shader);
                 defer rl.endShaderMode();
 
-                rl.drawModel(playerModel, playerPosition, 1.0, rl.colorFromNormalized(vec3ToVec4(playerColor)));
+                // rl.drawModel(playerModel, playerPosition, 1.0, rl.colorFromNormalized(vec3ToVec4(playerColor)));
+                rl.drawModel(otherModel, playerPosition, 1.0, rl.colorFromNormalized(vec3ToVec4(playerColor)));
             }
 
             rl.drawSphere(lightPosition, 0.5, rl.colorFromNormalized(vec3ToVec4(lightColor)));
@@ -96,11 +101,6 @@ pub fn gameLoop() !void {
         const controllingText = if (movingLight) "Light" else "Player";
         rl.drawText(controllingText, 0, 0, 8, .black);
     }
-}
-
-/// Casts MaterialMapIndex to a u32
-fn uMmi(mmi: rl.MaterialMapIndex) u32 {
-    return @intCast(@intFromEnum(mmi));
 }
 
 fn vec3ToVec4(vec3: rl.Vector3) rl.Vector4 {
